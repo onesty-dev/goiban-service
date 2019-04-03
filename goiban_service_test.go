@@ -55,8 +55,8 @@ func TestMain(m *testing.M) {
 	server = httptest.NewServer(router)
 
 	// repoSQL = data.NewSQLStore("mysql", "root:root@/goiban?charset=utf8")
-	repo = data.NewInMemoryStore()
-	loader.LoadBundesbankData(loader.DefaultBundesbankPath(), repo)
+	db = data.NewInMemoryStore()
+	loader.LoadBundesbankData(loader.DefaultBundesbankPath(), db)
 
 	retCode := m.Run()
 	server.Close()

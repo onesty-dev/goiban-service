@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -16,12 +17,9 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 
-	"github.com/fourcube/goiban-data"
-	"github.com/fourcube/goiban-data-loader/loader"
-
+	"github.com/julienschmidt/httprouter"
 	"github.com/onesty-dev/goiban"
 	m "github.com/onesty-dev/goiban-service/metrics"
-	"github.com/julienschmidt/httprouter"
 	"github.com/pmylund/go-cache"
 	"github.com/rs/cors"
 )
@@ -53,7 +51,7 @@ var (
 
 	metrics      *m.KeenMetrics
 	inmemMetrics = m.NewInmemMetricsRegister()
-	repo         data.BankDataRepository
+	db           *sql.DB
 	// Set at link time
 	Version string = "dev"
 	// Flags
@@ -71,7 +69,8 @@ var (
 func init() {
 	flag.StringVar(&dataPath, "dataPath", "", "Base path of the bank data")
 	flag.StringVar(&staticPath, "staticPath", "", "Base path of the static web content")
-	flag.StringVar(&mysqlURL, "dbUrl", "", "Database connection string")
+	//flag.StringVar(&mysqlURL, "dbUrl", "", "Database connection string")
+	mysqlURL=os.Getenv("DATABASE_CONNECTION_STRING")
 	flag.StringVar(&pidFile, "pidFile", "", "PID File path")
 
 	flag.StringVar(&port, "port", "8080", "HTTP Port or interface to listen on")
@@ -120,23 +119,10 @@ func main() {
 }
 
 func listen() {
-	if mysqlURL != "" {
-		log.Printf("Using SQL data store.")
-		repo = data.NewSQLStore("mysql", mysqlURL)
-	} else {
-		log.Printf("Using in-memory data store.")
-		repo = data.NewInMemoryStore()
-
-		if dataPath != "" {
-			loader.SetBasePath(dataPath)
-		}
-		loader.LoadBundesbankData(loader.DefaultBundesbankPath(), repo)
-		loader.LoadAustriaData(loader.DefaultAustriaPath(), repo)
-		loader.LoadBelgiumData(loader.DefaultBelgiumPath(), repo)
-		loader.LoadLiechtensteinData(loader.DefaultLiechtensteinPath(), repo)
-		loader.LoadLuxembourgData(loader.DefaultLuxembourgPath(), repo)
-		loader.LoadNetherlandsData(loader.DefaultNetherlandsPath(), repo)
-		loader.LoadSwitzerlandData(loader.DefaultSwitzerlandPath(), repo)
+	log.Printf("Using SQL data store.")
+	db, err = sql.Open("mysql", mysqlURL)
+	if err != nil {
+		log.Print(err)
 	}
 
 	router := httprouter.New()
@@ -301,12 +287,12 @@ func toBoolean(value string) bool {
 func additionalData(iban *goiban.Iban, intermediateResult *goiban.ValidationResult, config map[string]bool) *goiban.ValidationResult {
 	validateBankCode, ok := config["validateBankCode"]
 	if ok && validateBankCode {
-		intermediateResult = goiban.ValidateBankCode(iban, intermediateResult, repo)
+		intermediateResult = goiban.ValidateBankCode(iban, intermediateResult, db)
 	}
 
 	getBic, ok := config["getBIC"]
 	if ok && getBic {
-		intermediateResult = goiban.GetBic(iban, intermediateResult, repo)
+		intermediateResult = goiban.GetBic(iban, intermediateResult, db)
 	}
 	return intermediateResult
 }
