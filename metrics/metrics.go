@@ -8,7 +8,7 @@ import (
 	"time"
 
 	gm "github.com/armon/go-metrics"
-	"github.com/fourcube/goiban"
+	"github.com/onesty-dev/goiban"
 )
 
 type Event struct {

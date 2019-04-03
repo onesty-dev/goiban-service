@@ -29,7 +29,7 @@ import (
 	"encoding/json"
 	"log"
 
-	goiban "github.com/fourcube/goiban"
+	goiban "github.com/onesty-dev/goiban"
 	"github.com/franela/goreq"
 )
 
