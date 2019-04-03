@@ -19,8 +19,8 @@ import (
 	"github.com/fourcube/goiban-data"
 	"github.com/fourcube/goiban-data-loader/loader"
 
-	"github.com/fourcube/goiban"
-	m "github.com/fourcube/goiban-service/metrics"
+	"github.com/onesty-dev/goiban"
+	m "github.com/onesty-dev/goiban-service/metrics"
 	"github.com/julienschmidt/httprouter"
 	"github.com/pmylund/go-cache"
 	"github.com/rs/cors"

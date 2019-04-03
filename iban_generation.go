@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/fourcube/goiban"
+	"github.com/onesty-dev/goiban"
 	"github.com/julienschmidt/httprouter"
 )
 
