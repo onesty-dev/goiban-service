@@ -1,49 +1,18 @@
 goiban-service
 ==============
 
-## Service Shutdown Notice
+A modified version of the https://github.com/fourcube/goiban-service. It's difference is, it don't depends on the github.com/fourcube/goiban-data-loader/loader and it uses only the databse as data source.
 
-The openiban API will cease operation on the 24th of May, 10 p.m. GMT.
+There is also a docker container for the service onesty/goiban-service.
 
-You can read more about it at https://openiban.com.
-
-**Important**: I will continue to maintain the `goiban-service` repository.
-
---- 
-
-Implements a basic REST Web-service for validating IBAN account numbers in GO. Uses the logic from http://github.com/fourcube/goiban. Deployed at http://openiban.com .
-
-# Running the service
-
-## Via `go get`:
-
-```bash
-$ go get -u github.com/fourcube/goiban-service
-# Launch the service listening on port 8080 and serve static content
-$ $GOPATH/bin/goiban-service -port 8080 -w 
-```
-
-## Download a binary package:
-
-A list of all releases is available [here](https://github.com/fourcube/goiban-service/releases).
-
-```bash
-# Make sure to choose the correct operating system and architecture
-$ curl -Lo goiban-service.tar.gz "https://github.com/fourcube/goiban-service/releases/download/v1.0.2/goiban-service-1.0.2-linux-386.tar.gz"
-$ tar -xzf goiban-service.tar.gz
-$ cd goiban-service
-# Launch the service listening on port 8080, using the bank data from ./data and serving
-# the web interface from ./static
-$ ./goiban-service -dataPath ./data -staticPath ./static -port 8080 -w
-```
+# Running the service via Docker
 
 ## Via Docker
 
 https://hub.docker.com/r/fourcube/openiban/
 
 ```
-
-$ docker run --name openiban -d -p8080:8080 fourcube/openiban
+$ docker run --name openiban -d -p8080:8080 onesty/goiban-service
 $ curl localhost:8080/validate/DE89370400440532013000
 ```
 
@@ -62,62 +31,17 @@ You will see something like:
 }
 ```
 
-## Via Kubernetes
+# Database
 
-You can deploy above docker file in your kubernetes cluster by using the configuration files container in [./k8s](./k8s).
+You need an existing MySQL database as data source. You can configure the connection string the environment variable DATABASE_CONNECTION_STRING.
 
-Run the following command to apply the deployment and service (`NodePort service` running on port 32111)
-
-```bash
-kubectl apply -f ./k8s
-```
-
-# Building the service (MySQL)
-
-You have to install go >= 1.8, setup your GOPATH and install a MySQL server.
-Goiban requires a database called 'goiban'. The following commands assume a 
-MySQL database running on `localhost:3306` with database `goiban` and 
-user `root` with password `root`.
+The best way to get the system up and running ist to use the compose files from https://github.com/onesty-dev/compose-goiban-service.
 
 ```
-$ go get -u github.com/fourcube/goiban-data-loader
-$ cd $GOPATH/src/github.com/fourcube/goiban-data-loader
-$ DATABASE_URL="root:root@tcp(localhost:3306)/goiban?charset=utf8" make migrate
-
-# load data
-$ go build
-$ ./goiban-data-loader bundesbank root:root@/goiban?charset=utf8
-
-$ go get github.com/fourcube/goiban-service
-$ cd $GOPATH/src/github.com/fourcube/goiban-service
-$ go build
-$ ./goiban-service -port 8080 -dbURL root:root@/goiban?charset=utf8
-```
-
-To create a build without the metrics support (e.g if you run on go < 1.8) run:
+docker-compose -f docker-compose.yml -f docker-compose.env.yml up
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
 
 ```
-$ go build -tags no_metrics
-```
-
-MySQL development instance
--------
-To quickly run a MySQL database inside a docker container you can use
-the following command:
-
-`docker run -d --name openiban-mysql -p3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=goiban mysql`
-
-
-Client Libraries
-------
-
-Name                                                                                         | Language
--------------------------------------------------------------------------------------------- | ---------------------
-[openiban.js](https://github.com/fourcube/openiban.js) :star:                                | JavaScript/TypeScript
-[OpenIBAN](https://github.com/nathanIL/openiban)                                             | Python
-[OpenIban Connector](http://store.shopware.com/webch77589500739/openiban.com-connector.html) | PHP (Plugin for Shopware)
-
-:star: officially supported
 
 
 The MIT License (MIT)
