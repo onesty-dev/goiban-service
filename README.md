@@ -9,7 +9,7 @@ There is also a docker container for the service onesty/goiban-service.
 
 ## Via Docker
 
-https://hub.docker.com/r/fourcube/openiban/
+https://hub.docker.com/r/onesty/goiban-service
 
 ```
 $ docker run --name openiban -d -p8080:8080 onesty/goiban-service
